@@ -163,7 +163,9 @@ monitoring-kelembapan-udara-ets/
 
 ## 📸 Screenshot Program
 
-![Demo Program](screenshot/demo.png)
+![Demo Program](Hasil%20Program.png)
+
+![Demo Program](./Programming%20Rust%20VS%20Code.png)
 
 ---
 
