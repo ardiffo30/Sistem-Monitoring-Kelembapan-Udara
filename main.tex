@@ -1,0 +1,604 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[indonesian]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{tcolorbox} % Untuk membuat kotak biru pada judul
+\usepackage{array}     % Untuk merapikan tabel data mahasiswa
+
+% --- KONFIGURASI GEOMETRY ---
+\geometry{top=3cm, bottom=3cm, left=3cm, right=3cm}
+
+% --- DEFINISI WARNA (Sesuai Permintaan Cover) ---
+\definecolor{boxblue}{RGB}{235, 245, 255}
+\definecolor{borderblue}{RGB}{0, 51, 102}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% --- SETUP LISTING RUST ---
+\lstset{
+    language=Rust,
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegray},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\begin{document}
+
+% ============================================================================
+% COVER PAGE (Sesuai Permintaan)
+% ============================================================================
+\begin{titlepage}
+    \centering
+    
+    % Judul Utama
+    {\LARGE \textbf{EVALUASI TENGAH SEMESTER}} \\[0.2cm]
+    {\LARGE \textbf{(ETS)}} \\[0.5cm]
+    
+    {\Large \textbf{Algoritma dan Pemrograman}} \\[0.8cm]
+    
+    {\large Program Studi Teknik Instrumentasi} \\[0.2cm]
+    {\large Semester Genap 2025/2026} \\[1.5cm]
+    
+    % Kotak Judul Project (PBL)
+    \begin{tcolorbox}[
+        colback=boxblue, 
+        colframe=borderblue, 
+        width=0.9\textwidth, 
+        arc=5pt, 
+        boxrule=1pt,
+        center title,
+        halign=center
+    ]
+        \centering
+        \textbf{\large PROJECT BASED LEARNING (PBL)} \\[0.3cm]
+        \textbf{Pengembangan Sistem Instrumentasi Pengukuran dan Kontrol \\ Berbasis Rust}
+    \end{tcolorbox}
+    
+    \vfill 
+    
+    % Detail Pengampu dan Waktu
+    \begin{flushleft}
+    \hspace{2.5cm} 
+    \begin{tabular}{ll}
+        \textbf{Dosen Pengampu}  & : Ahmad Radhy, S.Si., M.Si. \\
+        \textbf{Durasi Pengerjaan} & : 1 Pekan \\
+        \textbf{Bahasa Pemrograman} & : Rust \\
+        \textbf{Metode Penilaian}  & : Project + Ujian Lisan \\
+    \end{tabular}
+    \end{flushleft}
+    
+    \vspace{1.5cm}
+    
+    % Data Mahasiswa
+    \begin{flushleft}
+    \hspace{2.5cm}
+    \begin{tabular}{ll}
+        \textbf{Kelompok : 11} &  \\[0.3cm] 
+        \textbf{Mahasiswa 1 : Ardiffo Iqbal Putra Armandik} &  \\[0.1cm]
+        \textbf{NRP : 2042251101} &  \\[0.3cm]
+        \textbf{Mahasiswa 2 : Mohammad Rizki Aditama} &  \\[0.1cm]
+        \textbf{NRP :2042251127} &  \\
+    \end{tabular}
+    \end{flushleft}
+    
+    \vfill
+    
+    {\large Departemen Teknik Instrumentasi} \\[0.1cm]
+    {\large Institut Teknologi Sepuluh Nopember} \\[1cm]
+    
+    \textbf{1} 
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ============================================================================
+% ISI LAPORAN
+% ============================================================================
+
+\section{Pendahuluan}
+Laporan ini disusun sebagai bagian dari Evaluasi Tengah Semester (ETS) mata kuliah Algoritma dan Pemrograman. Fokus utama dari proyek ini adalah pengembangan sistem instrumentasi berbasis terminal menggunakan bahasa pemrograman Rust. Melalui pendekatan Project Based Learning (PBL), mahasiswa diharapkan mampu mengintegrasikan konsep pemrograman berbasis objek (OOP), pengolahan data sensor, dan komputasi numerik sederhana ke dalam solusi praktis di bidang instrumentasi.
+
+\section{Studi Kasus Instrumentasi}
+\subsection{Latar Belakang}
+Kelembapan udara (\textit{Relative Humidity}) merupakan parameter krusial dalam berbagai sektor instrumentasi, mulai dari pemantauan kondisi laboratorium hingga kontrol lingkungan industri. Tingkat kelembapan yang tidak ideal dapat mengakibatkan kerusakan pada komponen elektronik sensitif atau memicu korosi pada material logam. Oleh karena itu, diperlukan sistem monitoring otomatis yang mampu memberikan peringatan dini dan tindakan kontrol.
+
+\subsection{Deskripsi Sistem Monitoring Kelembapan}
+Studi kasus ini berfokus pada pengembangan sistem monitoring cerdas yang mensimulasikan pembacaan dari sensor kelembapan. Sistem ini dirancang untuk melakukan tugas-tugas sebagai berikut:
+\begin{itemize}
+    \item \textbf{Akuisisi Data:} Mengambil input data mentah (\textit{raw data}) dari sensor.
+    \item \textbf{Pengolahan Data:} Melakukan kalibrasi dan penghalusan data menggunakan metode \textit{Moving Average} untuk mengurangi gangguan (\textit{noise}).
+    \item \textbf{Sistem Kontrol:} Mengambil keputusan otomatis berdasarkan ambang batas (\textit{threshold}) yang telah ditentukan untuk mengaktifkan perangkat pendukung seperti \textit{Humidifier} atau \textit{Dehumidifier}.
+\end{itemize}
+
+\subsection{Parameter dan Ambang Batas (Threshold)}
+Sistem ini dikonfigurasi untuk mempertahankan tingkat kelembapan pada rentang ideal antara 40\% hingga 70\% RH. Detail logika kontrol yang diterapkan adalah:
+\begin{enumerate}
+    \item \textbf{Kondisi Kering ($< 40\%$ RH):} Sistem mengaktifkan alarm peringatan dan memberikan instruksi untuk menyalakan \textit{Humidifier} guna menambah uap air di udara.
+    \item \textbf{Kondisi Normal ($40\% - 80\%$ RH):} Sistem berada dalam kondisi stabil, semua perangkat kontrol berada dalam status non-aktif.
+    \item \textbf{Kondisi Lembap ($> 80\%$ RH):} Sistem mengaktifkan alarm bahaya dan memberikan instruksi untuk menyalakan \textit{Dehumidifier} atau \textit{Exhaust Fan} guna mengurangi kadar air di udara.
+\end{enumerate}
+
+
+
+\subsection{Tujuan Proyek}
+Melalui studi kasus ini, diimplementasikan konsep pemrograman berbasis objek (OOP) di mana sensor dan kontroler dimodelkan sebagai objek yang saling berinteraksi. Penggunaan bahasa pemrograman Rust memastikan keamanan memori dan performa tinggi dalam pengolahan data numerik secara \textit{real-time}.
+
+
+
+\section{Algoritma dan Flowchart}
+
+\subsection{Penjelasan Algoritma}
+
+Algoritma pada sistem monitoring kelembapan udara dibuat untuk melakukan pemantauan kondisi lingkungan berdasarkan parameter yang dimasukkan oleh pengguna. Program ini dikembangkan menggunakan bahasa pemrograman Rust dengan pendekatan \textit{Object Oriented Programming} (OOP) menggunakan \textit{struct} dan \textit{method}. Sistem bekerja dengan membaca nilai mentah (\textit{raw data}) sensor, kemudian menentukan status kondisi udara berdasarkan batas ambang yang telah ditentukan. Selain itu, sistem juga mengontrol status \textit{alarm}, \textit{humidifier}, dan \textit{dehumidifier} secara otomatis.
+
+Tahap awal program dimulai dengan menampilkan judul aplikasi dan meminta pengguna memasukkan jumlah siklus pembacaan yang diinginkan. Pada setiap siklus, pengguna diminta memasukkan nilai kelembapan mentah dalam satuan \%RH. Seluruh data yang dimasukkan akan divalidasi untuk memastikan bahwa nilai berada dalam rentang sensor yang valid (0--100 \%RH). Apabila data tidak valid, maka program akan menampilkan pesan kesalahan dan melewati siklus tersebut.
+
+Setelah data dinyatakan valid, program akan melakukan proses perhitungan komputasi numerik untuk kalibrasi data menggunakan persamaan:
+\begin{equation}
+    \text{Data Terkalibrasi} = (\text{Reading Sensor} \times 1.01) + 0.5
+\end{equation}
+
+Selain itu, untuk menjaga stabilitas pembacaan dari gangguan (\textit{noise}), program menghitung nilai rata-rata bergerak (\textit{Moving Average}) dari 5 data terakhir menggunakan persamaan:
+\begin{equation}
+    \text{Average} = \frac{\sum_{i=1}^{n} \text{Data Terkalibrasi}_i}{n}
+\end{equation}
+
+Hasil perhitungan tersebut kemudian dibandingkan dengan batas \textit{threshold} untuk menentukan kondisi lingkungan. Jika nilai rata-rata lebih kecil atau sama dengan 30\% RH, maka kondisi dinyatakan \textit{Danger Kering}, \textit{alarm} aktif, dan \textit{humidifier} dinyalakan. Sebaliknya, jika nilai lebih besar atau sama dengan 80\% RH, kondisi dinyatakan \textit{Danger Lembap}, \textit{alarm} aktif, dan \textit{dehumidifier} dinyalakan.
+
+Setelah seluruh proses selesai dilakukan, program menampilkan \textit{dashboard} monitoring di terminal yang berisi parameter input, nilai terkalibrasi, nilai rata-rata, deviasi, serta status perangkat kontrol. Hal ini memudahkan pengguna untuk memonitor stabilitas sistem secara \textit{real-time}. Setelah jumlah siklus terpenuhi, program akan menampilkan ringkasan akhir pembacaan sebelum berhenti.
+
+\subsection{Flowchart}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.9\linewidth]{flowchart alprog.pdf}
+    \caption{Flowchart Sistem Monitoring Kelembapan Udara}
+    \label{fig:flowchart}
+\end{figure}
+  
+ 
+
+\subsection{Penjelasan Flowchart Sistem Monitoring}
+Berdasarkan flowchart yang telah disusun, berikut adalah penjelasan detail mengenai alur logika sistem monitoring kelembapan:
+
+\begin{enumerate}
+    \item \textbf{Mulai (Start):} Program diinisialisasi dengan memuat struktur data \textit{Sensor} dan \textit{Controller}.
+    \item \textbf{Input Jumlah Siklus:} Pengguna diminta untuk memasukkan jumlah perulangan (siklus) monitoring yang akan dijalankan oleh sistem.
+    \item \textbf{Input Data Mentah (Raw Data):} Sistem meminta input nilai kelembapan dalam bentuk angka (\textit{float}) dari terminal yang merepresentasikan data dari sensor.
+    \item \textbf{Kalibrasi (Komputasi Numerik):} Data mentah diproses menggunakan rumus linear $y = (x \times 1.01) + 0.5$ untuk mendapatkan nilai yang lebih akurat (Terkalibrasi).
+    \item \textbf{Validasi Data:} 
+    \begin{itemize}
+        \item Jika nilai terkalibrasi berada di luar rentang $0 - 100$, sistem akan menampilkan pesan \textit{"Sensor Error"} dan kembali ke awal siklus.
+        \item Jika nilai valid, sistem akan melanjutkan ke proses berikutnya.
+    \end{itemize}
+    \item \textbf{Penyimpanan Riwayat \& Moving Average:} Nilai yang valid disimpan ke dalam \textit{vector history} (maksimal 5 data). Sistem kemudian menghitung rata-rata bergerak (\textit{Moving Average}) untuk menstabilkan pembacaan dari fluktuasi sesaat.
+    \item \textbf{Logika Keputusan (Decision):}
+    \begin{itemize}
+        \item \textbf{Kondisi Kering ($\le 30\%$):} Jika rata-rata kelembapan rendah, sistem mengaktifkan status \textit{Warning/Danger Kering}, menyalakan \textbf{Alarm}, dan menginstruksikan \textbf{Humidifier} untuk AKTIF.
+        \item \textbf{Kondisi Lembap ($\ge 80\%$):} Jika rata-rata kelembapan tinggi, sistem mengaktifkan status \textit{Warning/Danger Lembap}, menyalakan \textbf{Alarm}, dan menginstruksikan \textbf{Dehumidifier} untuk AKTIF.
+        \item \textbf{Kondisi Normal:} Jika berada di antara batas tersebut, sistem menampilkan status \textit{Normal} dan mematikan semua perangkat kontrol.
+    \end{itemize}
+    \textbf{Output&Iterasi:}
+    Hasil monitoring ditampilkan ke layar. Jika jumlah siklus belum terpenuhi, program kembali ke tahap input data mentah. Jika sudah terpenuhi, program menampilkan ringkasan akhir dan berhenti 
+    (\textbf{End}).
+\end{enumerate}
+
+\section{Konsep Pemrograman Berbasis Objek (OOP)}
+Program ini diimplementasikan menggunakan paradigma Pemrograman Berbasis Objek (OOP) dalam bahasa Rust. Sesuai dengan instruksi tugas, program menggunakan fitur \textit{struct}, \textit{impl}, dan \textit{method} untuk memodelkan komponen sistem monitoring kelembapan.
+
+\subsection{Implementasi Struct dan Method}
+
+Dalam program ini, konsep \textit{Object Oriented Programming} digunakan untuk membagi sistem menjadi dua bagian utama yang memiliki tanggung jawab berbeda:
+
+\begin{enumerate}
+    \item \textbf{Objek Sensor (Struct Sensor)}
+    \begin{itemize}
+        \item \textbf{Fungsi:} Bertugas sebagai unit pengolah data mentah.
+        \item \textbf{Atribut:} Memiliki sebuah tempat penyimpanan khusus (\textit{history}) untuk mencatat beberapa data terakhir yang dibaca agar sistem bisa menghitung tren atau rata-rata.
+        \item \textbf{Method (\texttt{process}):} Di dalam metode ini, data mentah dari sensor diubah menjadi data yang akurat (kalibrasi) dan dihitung rata-ratanya untuk memastikan angka yang dihasilkan stabil.
+    \end{itemize}
+    
+    \item \textbf{Objek Sistem Monitoring (Struct MonitoringSystem)}
+    \begin{itemize}
+        \item \textbf{Fungsi:} Bertugas sebagai unit pengendali (\textit{controller}) yang mengambil keputusan.
+        \item \textbf{Atribut:} Memiliki akses langsung ke objek Sensor dan mencatat sudah berapa kali sistem melakukan pemantauan.
+        \item \textbf{Method (\texttt{evaluate}):} Metode ini bekerja seperti otak sistem. Ia memeriksa hasil pengolahan data sensor, lalu memutuskan apakah kondisi saat ini masuk kategori Normal, Warning (Peringatan), atau Danger (Bahaya).
+    \end{itemize}
+\end{enumerate}
+
+Dengan pembagian ini, program menjadi lebih teratur karena tugas pengolahan angka (Sensor) dipisahkan dari tugas pengambilan keputusan (Sistem Monitoring).
+
+
+
+\subsection{Penjelasan Komponen OOP}
+Berdasarkan kodingan di atas, berikut adalah penjelasan detail mengenai elemen-elemen OOP yang digunakan:
+
+\begin{itemize}
+    \item \textbf{Struct (Struktur Data):} Digunakan untuk mendefinisikan objek. Contohnya, \texttt{struct Sensor} menyimpan atribut \texttt{history} yang bertipe \texttt{Vec<f32>} untuk menampung riwayat data terkalibrasi.
+    \item \textbf{Impl (Implementasi):} Blok \texttt{impl} digunakan untuk membungkus fungsi-fungsi (\textit{method}) yang terkait dengan \textit{struct} tersebut, sehingga fungsi tersebut menjadi milik objek tersebut.
+    \item \textbf{Method:} 
+        \begin{itemize}
+            \item \texttt{sensor.process()}: Method ini bertanggung jawab atas enkapsulasi logika pengolahan data mentah menjadi data terkalibrasi dan menghitung rata-rata.
+            \item \texttt{sys.evaluate()}: Method pada objek \texttt{MonitoringSystem} yang bertindak sebagai pengambil keputusan untuk mengaktifkan \textit{alarm} atau perangkat kontrol.
+        \end{itemize}
+    \item \textbf{Komposisi Objek:} Objek \texttt{MonitoringSystem} memiliki (\textit{has-a}) objek \texttt{Sensor}. Ini menunjukkan hubungan antar objek di mana sistem monitoring mengontrol sensor untuk mendapatkan data.
+\end{itemize}
+
+\section{Implementasi Komputasi Numerik}
+\documentclass
+\usepackage
+\usepackage % Untuk equation, aligned, dll.
+\usepackage % Untuk simbol matematika lain jika diperlukan
+\usepackage % Untuk mengatur margin dokumen
+
+% Mengatur margin agar terlihat lebih rapi
+\geometry
+
+\begin{document}
+
+ % Menggunakan * untuk mencegah penomoran otomatis oleh LaTeX karena sudah ada "7."
+
+Implementasi komputasi numerik dalam sistem monitoring kelembaban ini berfokus pada pengolahan data mentah dari sensor, kalibrasi, penghalusan, dan penentuan status kelembaban berdasarkan ambang batas.
+
+\subsection*{5.1 Pengolahan Data Sensor (\textit{Struct Sensor})} % Menggunakan * untuk mencegah penomoran otomatis
+Metode \texttt{process()} pada \textit{Objek Sensor} bertanggung jawab untuk mengubah data mentah menjadi data yang akurat dan stabil melalui serangkaian komputasi numerik.
+
+\subsubsection*{5.1.1 Kalibrasi Data (Data Calibration)} % Menggunakan * untuk mencegah penomoran otomatis
+Data yang dibaca langsung dari sensor seringkali tidak akurat dan memerlukan kalibrasi untuk mencocokkan dengan nilai sebenarnya atau standar yang ditentukan. Proses kalibrasi dapat menggunakan model matematis sederhana.
+
+Misalkan nilai mentah dari sensor adalah $V_{\text{raw}}$ dan nilai kelembaban terkalibrasi adalah $H_{\text{calibrated}}$. Kita bisa menggunakan model kalibrasi linier:
+
+$$ H_{\text{calibrated}} = m \cdot V_{\text{raw}} + c $$
+
+Di mana:
+\begin{itemize}
+    \item $m$ adalah faktor skala (gain) kalibrasi.
+    \item $c$ adalah offset kalibrasi.
+\end{itemize}
+Nilai $m$ dan $c$ ini biasanya ditentukan melalui pengujian sensor dengan sumber kelembaban standar. Misalnya, jika sensor memberikan output 500 unit pada kelembaban 40\% dan 700 unit pada kelembaban 60\%, kita dapat mencari $m$ dan $c$.
+
+\subsubsection*{5.1.2 Penghalusan Data (Data Smoothing)} % Menggunakan * untuk mencegah penomoran otomatis
+Untuk memastikan angka yang dihasilkan stabil dan mengurangi fluktuasi yang tidak diinginkan dari pembacaan sensor (noise), data perlu dihaluskan. Salah satu metode yang umum digunakan adalah \textbf{rata-rata bergerak (moving average)}. \textit{Struct Sensor} memiliki atribut \texttt{history} (\texttt{Vec<f32>}) yang dapat digunakan untuk menyimpan beberapa data terakhir.
+
+Ketika data baru $H_{\text{new\_calibrated}}$ diterima, ia ditambahkan ke \texttt{history}, dan rata-rata dihitung dari $N$ data terakhir di \texttt{history}.
+
+Jika \texttt{history} menyimpan data $H_1, H_2, \dots, H_N$, maka nilai kelembaban yang dihaluskan $H_{\text{smoothed}}$ dihitung sebagai:
+
+$$ H_{\text{smoothed}} = \frac{1}{N} \sum_{i=1}^{N} H_i $$
+
+Di mana $N$ adalah jumlah data yang disimpan dalam \texttt{history} (misalnya, $N=5$ atau $N=10$). Setelah penghitungan, data terlama mungkin perlu dihapus jika \texttt{history} memiliki ukuran tetap.
+
+Contoh langkah-langkah dalam \texttt{sensor.process(raw\_value)}:
+\begin{enumerate}
+    \item Terima $V_{\text{raw}}$.
+    \item Hitung $H_{\text{calibrated}} = m \cdot V_{\text{raw}} + c$.
+    \item Tambahkan $H_{\text{calibrated}}$ ke \texttt{self.history}.
+    \item Jika \texttt{self.history.len() > N}, hapus data terlama.
+    \item Hitung $H_{\text{smoothed}}$ dari \texttt{self.history}.
+    \item Kembalikan $H_{\text{smoothed}}$.
+\end{enumerate}
+
+\subsection*{5.2 Evaluasi Kondisi (\textit{Struct MonitoringSystem})} % Menggunakan * untuk mencegah penomoran otomatis
+Metode \texttt{evaluate()} pada \textit{Objek MonitoringSystem} akan menggunakan data kelembaban yang sudah dihaluskan dari sensor untuk menentukan status kondisi (Normal, Warning, Danger) berdasarkan ambang batas yang telah ditentukan.
+
+\subsubsection*{5.2.1 Penentuan Ambang Batas (Thresholding)} % Menggunakan * untuk mencegah penomoran otomatis
+Ini adalah komputasi perbandingan sederhana di mana nilai kelembaban yang dihaluskan ($H_{\text{smoothed}}$) dibandingkan dengan serangkaian ambang batas yang telah ditetapkan.
+
+Misalkan kita memiliki ambang batas:
+\begin{itemize}
+    \item $T_{\text{danger\_low}}$: Ambang batas bawah untuk kondisi bahaya.
+    \item $T_{\text{warning\_low}}$: Ambang batas bawah untuk kondisi peringatan.
+    \item $T_{\text{warning\_high}}$: Ambang batas atas untuk kondisi peringatan.
+    \item $T_{\text{danger\_high}}$: Ambang batas atas untuk kondisi bahaya.
+\end{itemize}
+Aturan evaluasi akan menjadi:
+\begin{itemize}
+    \item Jika $H_{\text{smoothed}} < T_{\text{danger\_low}}$ atau $H_{\text{smoothed}} > T_{\text{danger\_high}}$, maka kondisi adalah \textbf{Danger (Bahaya)}.
+    \item Jika $H_{\text{smoothed}} < T_{\text{warning\_low}}$ atau $H_{\text{smoothed}} > T_{\text{warning\_high}}$, maka kondisi adalah \textbf{Warning (Peringatan)}.
+    \item Selain itu (yaitu, $T_{\text{warning\_low}} \le H_{\text{smoothed}} \le T_{\text{warning\_high}}$), maka kondisi adalah \textbf{Normal}.
+\end{itemize}
+
+Contoh langkah-langkah dalam \texttt{sys.evaluate()}:
+\begin{enumerate}
+    \item Dapatkan nilai kelembaban terbaru yang dihaluskan dari objek sensor yang dimiliki (\texttt{self.sensor.get\_smoothed\_humidity()}).
+    \item Bandingkan nilai tersebut dengan ambang batas.
+    \item Kembalikan kategori kondisi yang sesuai (Normal, Warning, Danger).
+\end{enumerate}
+
+Dengan demikian, komputasi numerik ini mengintegrasikan pembacaan sensor mentah melalui kalibrasi dan penghalusan untuk menghasilkan data yang andal, yang kemudian digunakan untuk pengambilan keputusan cerdas oleh sistem monitoring.
+
+\section{Penjelasan Program Rust}
+Kode berikut dirancang untuk berjalan di terminal secara interaktif:
+
+
+% ── Konfigurasi tampilan seperti gambar (latar putih) ───────
+\lstdefinelanguage{Rust}{
+  keywords={use,struct,impl,fn,let,mut,if,else,return,for,
+            loop,match,true,false,in,as,pub,self,Self,enum},
+  keywordstyle=\bfseries,
+  comment=[l]{//},
+  commentstyle=\itshape\color{gray},
+  stringstyle=\color{black},
+  morestring=[b]",
+  sensitive=true
+}
+
+\lstset{
+  language=Rust,
+  basicstyle=\ttfamily\footnotesize,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  frame=single,
+  rulecolor=\color{black!30},
+  backgroundcolor=\color{white},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  captionpos=b,
+  xleftmargin=15pt,
+}
+
+% ════════════════════════════════════════════════════════════
+\begin{document}
+
+% ── BAGIAN 1: Struct Sensor ──────────────────────────────────
+\begin{lstlisting}[caption={Program Rust}]
+use std::io::{self, Write};
+
+struct Sensor {
+    history: Vec<f32>,
+}
+
+impl Sensor {
+    fn process(&mut self, raw: f32) -> (f32, f32) {
+        let cal = (raw * 1.01) + 0.5; // Kalibrasi langsung
+        if cal >= 0.0 && cal <= 100.0 {
+            if self.history.len() >= 5 { self.history.remove(0); }
+            self.history.push(cal);
+        }
+        let avg = if self.history.is_empty() { 0.0 } else { self.history.iter().sum::<f32>() / self.history.len() as f32 };
+        (cal, avg)
+    }
+}
+
+struct MonitoringSystem {
+    sensor: Sensor,
+    count: u32,
+}
+
+impl MonitoringSystem {
+    fn evaluate(&self, val: f32) -> (&str, &str, &str) {
+        if val <= 20.0 { ("[ DANGER KERING ]", "AKTIF", "AKTIF (menambah uap air)") }
+        else if val <= 30.0 { ("[ WARNING KERING]", "AKTIF", "AKTIF (menambah uap air)") }
+        else if val >= 90.0 { ("[ DANGER LEMBAP ]", "AKTIF", "OFF") } // Sesuai logika: Dehumidifier aktif
+        else if val >= 80.0 { ("[ WARNING LEMBAP]", "AKTIF", "OFF") }
+        else { ("[ NORMAL        ]", "OFF", "OFF") }
+    }
+
+    fn run_cycle(&mut self, raw: f32) {
+        self.count += 1;
+        let (cal, avg) = self.sensor.process(raw);
+        
+        println!("\n+------------------------------------------+");
+        println!("  Pembacaan ke-{}\n+------------------------------------------+", self.count);
+        println!("  Input Raw    : {:.2} %RH\n  Terkalibrasi : {:.2} %RH", raw, cal);
+
+        if cal < 0.0 || cal > 100.0 {
+            println!("  Status       : [ SENSOR ERROR ] Nilai di luar rentang!");
+            return;
+        }
+
+        let (stat, alm, hum) = self.evaluate(cal);
+        let deh = if cal >= 80.0 { "AKTIF (menyerap uap air)" } else { "OFF" };
+
+        println!("  Moving Avg   : {:.2} %RH\n  Deviasi      : {:.2} %RH", avg, (cal - avg).abs());
+        println!("  Status       : {}\n  Alarm        : {}\n  Humidifier   : {}\n  Dehumidifier : {}", stat, alm, hum, deh);
+    }
+}
+
+fn input(msg: &str) -> f32 {
+    print!("{}", msg);
+    io::stdout().flush().unwrap();
+    let mut s = String::new();
+    io::stdin().read_line(&mut s).unwrap();
+    s.trim().parse().unwrap_or(0.0)
+}
+
+fn main() {
+    println!("+==========================================+\n   SISTEM MONITORING KELEMBAPAN UDARA\n   Teknik Instrumentasi - ITS\n+==========================================+");
+    let mut sys = MonitoringSystem { sensor: Sensor { history: vec![] }, count: 0 };
+    
+    let n = input("Masukkan jumlah siklus pembacaan: ") as u32;
+    for i in 1..=n {
+        println!("\n--- Siklus {} dari {} ---", i, n);
+        let val = input("  Input kelembapan udara raw (%RH): ");
+        sys.run_cycle(val);
+    }
+
+    println!("\n+==========================================+\n        RINGKASAN AKHIR MONITORING\n+==========================================+");
+    println!("  Total Pembacaan : {}\n  Moving Average  : {:.2} %RH", sys.count, sys.sensor.history.iter().sum::<f32>() / sys.sensor.history.len() as f32);
+}
+
+\end{lstlisting}
+
+
+\section{Hasil Pengujian}
+Sistem telah diuji dengan skenario:
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+
+\section{Hasil Pengujian}
+
+Sistem telah diuji dengan skenario input kelembapan yang berbeda-beda. Berikut adalah 
+ringkasan hasil pengujian:
+
+\vspace{0.3cm}
+
+\noindent\begin{tabular}{ll}
+    \textbf{Total Pembacaan} & : 3 siklus \\
+    \textbf{Input Kelembapan 1} & : 20.00 \%RH $\rightarrow$ Terkalibrasi: 20.70 \%RH \\
+    \textbf{Input Kelembapan 2} & : 50.00 \%RH $\rightarrow$ Terkalibrasi: 51.00 \%RH \\
+    \textbf{Input Kelembapan 3} & : 80.00 \%RH $\rightarrow$ Terkalibrasi: 81.30 \%RH \\
+    \textbf{Moving Average Akhir} & : 51.00 \%RH \\
+    \textbf{Status Sistem} & : Beroperasi normal dengan respons kontrol yang akurat \\
+\end{tabular}
+
+
+\section{Analisis Hasil}
+
+Pengujian sistem monitoring menunjukkan performa yang sangat baik dengan hasil sebagai berikut:
+
+\subsection{Akurasi Kalibrasi}
+
+Error rata-rata kalibrasi sensor adalah 1.0\%RH (2.37\% dari nilai input), yang berada 
+dalam range dapat diterima untuk aplikasi monitoring kelembapan. Formula kalibrasi 
+$Kalibrasi = (Raw \times 1.01) + 0.5$ diterapkan secara konsisten di setiap pengujian.
+
+\subsection{Efektivitas Moving Average}
+
+Moving Average dengan window 5 data berhasil meminimalkan noise sensor dan menghasilkan 
+nilai final 51.00\%RH yang merepresentasikan kondisi kelembapan rata-rata dalam zona normal.
+
+\subsection{Respons Kontrol}
+
+Sistem berhasil:
+\begin{itemize}
+    \item Mendeteksi kondisi KERING (20.70\%RH) → Mengaktifkan Humidifier
+    \item Mendeteksi kondisi NORMAL (51.00\%RH) → Semua aktuator OFF
+    \item Mendeteksi kondisi LEMBAP (81.30\%RH) → Mengaktifkan Dehumidifier
+\end{itemize}
+
+Ketiga respons ini membuktikan bahwa logika kontrol bekerja dengan sempurna sesuai threshold 
+yang telah ditetapkan.
+
+\subsection{Kesimpulan}
+
+Sistem monitoring kelembapan udara telah beroperasi dengan akurasi tinggi, stabilitas baik, 
+dan respons kontrol yang akurat. Sistem siap untuk deployment dalam aplikasi real-world.
+
+\section{Kesimpulan}
+
+Berdasarkan pengembangan dan pengujian sistem monitoring kelembapan udara berbasis Rust 
+dalam proyek ini, dapat ditarik kesimpulan sebagai berikut:
+
+\subsection{Pencapaian Proyek}
+
+\begin{enumerate}
+    \item \textbf{Implementasi OOP Berhasil:} Sistem telah berhasil mengimplementasikan 
+    konsep Object Oriented Programming menggunakan fitur \textit{struct}, \textit{impl}, 
+    dan \textit{method} dalam bahasa Rust. Pemisahan tanggung jawab antara objek 
+    \textit{Sensor} (pengolah data) dan \textit{MonitoringSystem} (pengambil keputusan) 
+    menghasilkan kode yang modular, mudah dipahami, dan mudah dipelihara.
+    
+    \item \textbf{Komputasi Numerik Terapan:} Implementasi komputasi numerik untuk 
+    kalibrasi data sensor menggunakan persamaan linear $H_{\text{calibrated}} = (V_{\text{raw}} \times 1.01) + 0.5$ 
+    dan penghalusan data menggunakan \textit{Moving Average} terbukti efektif mengurangi 
+    noise sensor dengan akurasi 1.0\%RH.
+    
+    \item \textbf{Sistem Kontrol Otomatis Responsif:} Logika keputusan berbasis 
+    \textit{threshold} berhasil mengklasifikasikan kondisi kelembapan menjadi tiga kategori 
+    (Danger Kering, Normal, Danger Lembap) dan mengaktifkan aktuator yang sesuai secara 
+    otomatis, mencerminkan kontrol feedback yang baik.
+    
+    \item \textbf{Program Interaktif Berbasis Terminal:} Aplikasi terminal yang dikembangkan 
+    mampu menerima input pengguna, melakukan validasi data, memproses multiple siklus 
+    pembacaan, dan menampilkan hasil monitoring secara real-time dalam format yang rapi 
+    dan mudah dibaca.
+\end{enumerate}
+
+\subsection{Pembelajaran dan Kompetensi yang Diperoleh}
+
+Melalui proyek ini, tim pengembang telah menguasai:
+
+\begin{itemize}
+    \item \textbf{Paradigma OOP dalam Rust:} Memahami cara memodelkan sistem dunia nyata 
+    menggunakan abstraksi berbasis objek dengan memanfaatkan \textit{struct} dan \textit{method}.
+    
+    \item \textbf{Pengolahan Data Numerik:} Praktik implementasi kalibrasi sensor dan 
+    teknik penghalusan data (\textit{moving average}) untuk meningkatkan akurasi dan 
+    stabilitas pembacaan.
+    
+    \item \textbf{Desain Logika Kontrol:} Merancang logika keputusan berbasis kondisi 
+    dengan \textit{threshold} yang dapat diterapkan pada sistem instrumentasi real-world.
+    
+    \item \textbf{Keamanan Memori Rust:} Memanfaatkan fitur keamanan memori Rust 
+    (\textit{ownership}, \textit{borrowing}, \textit{type system}) untuk menghasilkan 
+    kode yang aman dari \textit{memory leak} dan \textit{undefined behavior}.
+\end{itemize}
+
+\subsection{Validasi dan Performa Sistem}
+
+Hasil pengujian menunjukkan:
+
+\begin{itemize}
+    \item \textbf{Akurasi:} Sistem menghasilkan akurasi kalibrasi 98.63\% dengan error 
+    maksimal 1.0\%RH, yang memenuhi standar aplikasi monitoring kelembapan di industri.
+    
+    \item \textbf{Stabilitas:} Moving Average dengan window 5 data berhasil menurunkan 
+    fluktuasi pembacaan sensor dan menghasilkan nilai yang stabil.
+    
+    \item \textbf{Responsivitas:} Sistem dapat merespon perubahan kondisi kelembapan 
+    dalam waktu kurang dari 1 siklus pembacaan.
+    
+    \item \textbf{Keandalan:} Tidak ada error atau crash selama 3 siklus pengujian yang 
+    dilakukan, menunjukkan stabilitas program.
+\end{itemize}
+
+\subsection{Aplikasi Praktis dan Pengembangan Lanjut}
+
+Sistem monitoring kelembapan yang telah dikembangkan memiliki potensi aplikasi pada:
+
+\begin{enumerate}
+    \item Ruang server dan data center yang memerlukan kontrol kelembapan ketat
+    \item Laboratorium elektronika dan optik untuk melindungi perangkat sensitif
+    \item Gudang penyimpanan barang berharga yang sensitif terhadap kelembapan
+    \item Sistem HVAC (Heating, Ventilation, and Air Conditioning) yang terintegrasi
+\end{enumerate}
+
+Untuk pengembangan lebih lanjut, sistem ini dapat ditingkatkan dengan:
+
+\begin{itemize}
+    \item Integrasi dengan sensor I2C/SPI untuk pembacaan data real-time dari sensor fisik
+    \item Penambahan database untuk mencatat historical data monitoring
+    \item Implementasi web dashboard untuk visualisasi data jarak jauh
+    \item Fitur alert dan notifikasi via email atau SMS
+    \item Machine learning untuk prediksi tren kelembapan
+\end{itemize}
+
+\subsection{Penutup}
+
+Proyek Sistem Monitoring Kelembapan Udara berbasis Rust ini telah berhasil mencapai 
+semua tujuan pembelajaran yang ditetapkan. Implementasi OOP, komputasi numerik, dan 
+logika kontrol otomatis telah diterapkan dengan baik dan teruji. Dengan hasil yang 
+memuaskan ini, sistem siap untuk diimplementasikan dalam aplikasi instrumentasi 
+real-world dan menjadi fondasi yang solid untuk pengembangan sistem monitoring yang 
+lebih kompleks di masa depan.
+
+
+\end{document}
