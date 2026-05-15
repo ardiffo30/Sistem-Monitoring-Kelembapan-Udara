@@ -171,7 +171,7 @@ monitoring-kelembapan-udara-ets/
 
 ## 🔄 Flowchart Sistem
 
-![Flowchart](flowchart/flowchart.png)
+![Flowchart](Flowchart.png)
 
 ---
 
