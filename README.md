@@ -16,12 +16,12 @@ Aplikasi monitoring kelembapan udara berbasis terminal menggunakan bahasa pemrog
 
 ---
 
-## 👥 Anggota Kelompok
+## 👥 Anggota Kelompok 11
 
 | Nama | NRP |
 |------|-----|
-| [Nama Mahasiswa 1] | [NRP 1] |
-| [Nama Mahasiswa 2] | [NRP 2] |
+| [Ardiffo Iqbal Putra Armandik] | [2042251101] |
+| [Mohammad Rizki Aditama] | [2042251127] |
 
 ---
 
